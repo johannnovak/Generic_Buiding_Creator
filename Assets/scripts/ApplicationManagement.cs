@@ -60,6 +60,7 @@ public class ApplicationManagement : MonoBehaviour {
 		m_cameraPersp = m_cameraPerspObject.GetComponent<Camera> ();
 		m_cameraOrthoObject = GameObject.Find ("camera_ortho");
 		m_cameraOrtho = m_cameraOrthoObject.GetComponent<Camera> ();
+		m_cameraPerspObject.SetActive (true);
 		m_cameraOrthoObject.SetActive (false);
 		m_currentCamera = m_cameraPersp;
 		m_currentCameraObject = m_cameraPerspObject;
@@ -154,7 +155,6 @@ public class ApplicationManagement : MonoBehaviour {
 
 		if (m_currentCameraProjection.Equals (CameraProjection.ORTHOGRAPHIC)) 
 		{
-			Debug.Log("ortho");
 			/* Orthographic y management */
 			m_currentCamera.orthographicSize -= m_zTranslationSpeed * mouseWheelValue / 5;
 			RotateCameraOrthoIfPossible(m_isRotating, mouseOrigin);
