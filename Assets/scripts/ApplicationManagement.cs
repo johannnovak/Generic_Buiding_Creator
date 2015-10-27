@@ -169,7 +169,7 @@ public class ApplicationManagement : MonoBehaviour {
 
 	public void TranslateCamera(Vector3 _mouseOrigin)
 	{
-		Vector3 pos = m_currentCamera.ScreenToViewportPoint(- (Input.mousePosition - _mouseOrigin));
+		Vector3 pos = m_currentCamera.ScreenToViewportPoint((Input.mousePosition - _mouseOrigin));
 		Vector3 move = new Vector3(pos.x * m_xyTranslationSpeed, pos.y * m_xyTranslationSpeed, 0);
 		
 		m_currentCamera.transform.Translate(move, Space.Self);	
@@ -183,10 +183,10 @@ public class ApplicationManagement : MonoBehaviour {
 
 	public void RotateCameraOrtho(Vector3 _mouseOrigin)
 	{
-		Vector3 pos = m_currentCamera.ScreenToViewportPoint((Input.mousePosition - _mouseOrigin));
+		Vector3 pos = m_cameraOrtho.ScreenToViewportPoint(-(Input.mousePosition - _mouseOrigin));
 		
-		m_currentCamera.transform.RotateAround(m_currentCamera.transform.position, Vector3.up, -pos.y * m_rotatingSpeed);
-		m_currentCamera.transform.RotateAround(m_currentCamera.transform.position, Vector3.up, pos.x * m_rotatingSpeed);
+		m_cameraOrtho.transform.RotateAround(m_cameraOrtho.transform.position, Vector3.up, -pos.y * m_rotatingSpeed);
+		m_cameraOrtho.transform.RotateAround(m_cameraOrtho.transform.position, Vector3.up, pos.x * m_rotatingSpeed);
 	}
 	
 	public void RotateCameraOrthoIfPossible(bool _isRotating, Vector3 _mouseOrigin)
@@ -197,10 +197,10 @@ public class ApplicationManagement : MonoBehaviour {
 
 	public void RotateCameraPersp(Vector3 _mouseOrigin)
 	{
-		Vector3 pos = m_currentCamera.GetComponent<Camera>().ScreenToViewportPoint((Input.mousePosition - _mouseOrigin));
+		Vector3 pos = m_cameraPersp.ScreenToViewportPoint(-(Input.mousePosition - _mouseOrigin));
 		
-		m_currentCamera.transform.RotateAround(m_currentCamera.transform.position, m_currentCamera.transform.right, -pos.y * m_rotatingSpeed);
-		m_currentCamera.transform.RotateAround(m_currentCamera.transform.position, Vector3.up, pos.x * m_rotatingSpeed);
+		m_cameraPersp.transform.RotateAround(m_cameraPersp.transform.position, m_cameraPersp.transform.right, -pos.y * m_rotatingSpeed);
+		m_cameraPersp.transform.RotateAround(m_cameraPersp.transform.position, Vector3.up, pos.x * m_rotatingSpeed);
 	}
 	
 	public void RotateCameraPerspIfPossible(bool _isRotating, Vector3 _mouseOrigin)
