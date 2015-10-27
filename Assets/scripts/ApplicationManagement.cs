@@ -55,6 +55,9 @@ public class ApplicationManagement : MonoBehaviour {
 	Dictionary<String, LinkedList<GameObject>> m_building;
 	Text m_levelDisplayText;
 
+	Text m_scaleText;
+	Slider m_scaleSlider;
+
 	public void Start()
 	{
 		m_currentCreationState = CreationState.VISUALIZATION;
@@ -97,6 +100,9 @@ public class ApplicationManagement : MonoBehaviour {
 
 		m_levelDisplayText.text = "*";*/
 
+		m_scaleText = GameObject.Find ("text_scale").GetComponent<Text>();
+		m_scaleSlider = GameObject.Find ("slider_scale").GetComponent<Slider> ();
+		m_scaleSlider.value = 100;
 		SetActiveStatePanel (m_visualizationStatePanel);
 	}
 
@@ -329,6 +335,14 @@ public class ApplicationManagement : MonoBehaviour {
 			m_canSelectObject = false;
 		else
 			m_canSelectObject = _bool;
+	}
+
+	public void OnScaleChangedValue()
+	{
+		float sliderstep = 50;
+		float mod = m_scaleSlider.value % sliderstep;
+		if(mod >= sliderstep/2)
+			m_scaleText.text = "1m : " + (m_scaleSlider.value + sliderstep - mod) + "px";
 	}
 
 	public void OnQuitSoftware() {
