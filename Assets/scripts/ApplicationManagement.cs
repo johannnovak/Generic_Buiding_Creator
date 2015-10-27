@@ -23,12 +23,15 @@ public class ApplicationManagement : MonoBehaviour {
 	CreationState m_currentCreationState;
 	Dropdown m_dropdownCreationState;
 
+	GameObject m_buildingObservationPanel;
 	GameObject m_cameraPerspObject;
 	Camera m_cameraPersp;
 	GameObject m_cameraOrthoObject;
 	Camera m_cameraOrtho;
 	Camera m_currentCamera;
 	GameObject m_currentCameraObject;
+	Text m_cameraProjectionText;
+	CameraProjection m_currentCameraProjection;
 
 	Vector3 mouseOrigin;
 	bool m_isRotating;
@@ -36,10 +39,12 @@ public class ApplicationManagement : MonoBehaviour {
 	float m_xyTranslationSpeed;
 	float m_zTranslationSpeed;
 	float m_rotatingSpeed;
+	
+	GameObject m_buildingCreationStatePanel;
+	GameObject m_objectCreationStatePanel;
+	GameObject m_customizationStatePanel;
+	GameObject m_visualizationStatePanel;
 
-	CameraProjection m_currentCameraProjection;
-
-	GameObject m_creationPanel;
 	bool m_canSelectObject;
 	GameObject m_selectedObject;
 	Material m_selectedMaterial;
@@ -55,6 +60,7 @@ public class ApplicationManagement : MonoBehaviour {
 		m_currentCreationState = CreationState.VISUALIZATION;
 		m_dropdownCreationState = GameObject.Find ("dropdown_creation_states").GetComponent<Dropdown>();
 
+		m_buildingObservationPanel = GameObject.Find ("panel_building_observation");
 		m_currentCameraProjection = CameraProjection.PERSPECTIVE;
 		m_cameraPerspObject = GameObject.Find ("camera_persp");
 		m_cameraPersp = m_cameraPerspObject.GetComponent<Camera> ();
@@ -64,21 +70,24 @@ public class ApplicationManagement : MonoBehaviour {
 		m_cameraOrthoObject.SetActive (false);
 		m_currentCamera = m_cameraPersp;
 		m_currentCameraObject = m_cameraPerspObject;
+		m_cameraProjectionText = GameObject.Find ("text_camera_projection").GetComponent<Text> ();
 
 		m_isTranslating = false;
 		m_isRotating = false;
 		m_xyTranslationSpeed = 1;
 		m_zTranslationSpeed = 30;
 		m_rotatingSpeed = 5;
-
-		m_creationPanel = GameObject.Find ("panel_building_creation");
+		
+		m_buildingCreationStatePanel = GameObject.Find ("panel_building_creation");
+		m_objectCreationStatePanel = GameObject.Find ("panel_object_creation");
+		m_customizationStatePanel = GameObject.Find ("panel_customization");
+		m_visualizationStatePanel = GameObject.Find ("panel_visualization");
 		m_canSelectObject = false;
 		Shader.EnableKeyword ("_EMISSION");
 		m_selectedMaterial = Resources.Load("stripes_mat", typeof(Material)) as Material;
 		m_defaultWallMaterial = Resources.Load ("Default-Material", typeof(Material)) as Material;
 
 		m_levelDisplayText = GameObject.Find ("label_level_display").GetComponent<Text>();
-
 
 		m_buildingContainer = GameObject.Find ("building");
 		m_building = new Dictionary<string, LinkedList<GameObject>> ();
@@ -87,6 +96,8 @@ public class ApplicationManagement : MonoBehaviour {
 		m_building.Add ("*", list);
 
 		m_levelDisplayText.text = "*";*/
+
+		SetActiveStatePanel (m_visualizationStatePanel);
 	}
 
 	public void Update()
@@ -169,7 +180,7 @@ public class ApplicationManagement : MonoBehaviour {
 
 	public void TranslateCamera(Vector3 _mouseOrigin)
 	{
-		Vector3 pos = m_currentCamera.ScreenToViewportPoint((Input.mousePosition - _mouseOrigin));
+		Vector3 pos = m_currentCamera.ScreenToViewportPoint(-(Input.mousePosition - _mouseOrigin));
 		Vector3 move = new Vector3(pos.x * m_xyTranslationSpeed, pos.y * m_xyTranslationSpeed, 0);
 		
 		m_currentCamera.transform.Translate(move, Space.Self);	
@@ -223,48 +234,71 @@ public class ApplicationManagement : MonoBehaviour {
 		switch (m_dropdownCreationState.value) 
 		{
 			case 0:
-				onChangeCameraProjection ();
 				m_currentCreationState = CreationState.BASE;
-				m_currentCameraProjection = CameraProjection.PERSPECTIVE;
+				m_currentCameraProjection = CameraProjection.ORTHOGRAPHIC;
+				SetCameraProjectionToOrthographic();
+				SetActiveStatePanel(m_buildingCreationStatePanel);
 				break;
 			case 1 :
 				m_currentCreationState = CreationState.OBJECT_CREATION;
-				m_currentCameraProjection = CameraProjection.ORTHOGRAPHIC;
+				m_currentCameraProjection = CameraProjection.PERSPECTIVE;
+				SetCameraProjectionToPerspective();
+				SetActiveStatePanel(m_objectCreationStatePanel);
 				break;
 			case 2 :
 				m_currentCreationState = CreationState.CUSTOMIZATION;
-				m_currentCameraProjection = CameraProjection.ORTHOGRAPHIC;
+				m_currentCameraProjection = CameraProjection.PERSPECTIVE;
+				SetCameraProjectionToPerspective();
+				SetActiveStatePanel(m_customizationStatePanel);
 				break;
 			case 3 :
 				m_currentCreationState = CreationState.VISUALIZATION;
-				m_currentCameraProjection = CameraProjection.ORTHOGRAPHIC;
+				m_currentCameraProjection = CameraProjection.PERSPECTIVE;
+				SetCameraProjectionToPerspective();
+				SetActiveStatePanel(m_visualizationStatePanel);
 				break;
 			default:
 				break;
 		}
-		onChangeCameraProjection ();
+	}
+
+	public void SetCameraProjectionToOrthographic()
+	{
+		m_cameraProjectionText.text = "ortho";
+		m_currentCameraProjection = CameraProjection.ORTHOGRAPHIC;
+		m_cameraPerspObject.SetActive (false);
+		m_cameraOrthoObject.SetActive (true);
+		m_currentCamera = m_cameraOrtho;
+		m_currentCameraObject = m_cameraOrthoObject;
+	}
+	
+	public void SetCameraProjectionToPerspective()
+	{
+		m_cameraProjectionText.text = "persp";
+		m_currentCameraProjection = CameraProjection.PERSPECTIVE;
+		m_cameraOrthoObject.SetActive (false);
+		m_cameraPerspObject.SetActive (true);
+		m_currentCamera = m_cameraPersp;
+		m_currentCameraObject = m_cameraPerspObject;
+	}
+
+	public void SetActiveStatePanel(GameObject _panel)
+	{
+		m_buildingCreationStatePanel.SetActive (false);
+		m_objectCreationStatePanel.SetActive (false);
+		m_customizationStatePanel.SetActive (false);
+		m_visualizationStatePanel.SetActive (false);
+		_panel.SetActive (true);
 	}
 
 	public void onChangeCameraProjection()
 	{
 		if (!m_currentCreationState.Equals (CreationState.BASE)) {
 
-			Text text = GameObject.Find ("text_camera_projection").GetComponent<Text> ();
-			if (m_currentCameraProjection.Equals (CameraProjection.ORTHOGRAPHIC)) {
-				text.text = "persp";
-				m_currentCameraProjection = CameraProjection.PERSPECTIVE;
-				m_cameraOrthoObject.SetActive (false);
-				m_cameraPerspObject.SetActive (true);
-				m_currentCamera = m_cameraPersp;
-				m_currentCameraObject = m_cameraPerspObject;
-			} else {
-				text.text = "ortho";
-				m_currentCameraProjection = CameraProjection.ORTHOGRAPHIC;
-				m_cameraPerspObject.SetActive (false);
-				m_cameraOrthoObject.SetActive (true);
-				m_currentCamera = m_cameraOrtho;
-				m_currentCameraObject = m_cameraOrthoObject;
-			}
+			if (m_currentCameraProjection.Equals (CameraProjection.ORTHOGRAPHIC)) 
+				SetCameraProjectionToPerspective();
+			else 
+				SetCameraProjectionToOrthographic();
 		}
 	}
 
